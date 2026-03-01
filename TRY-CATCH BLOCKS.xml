@@ -15,7 +15,7 @@ pipeline {
                 script {
                     try {
                         echo 'In this stage code will be cloned'
-                        git branch: 'master', url: 'https://github.com/devopstraininghub/mindcircuit16d.git'
+                        git branch: 'main', url: 'https://github.com/Harinath234/mindcircuit16d.git'
                     } catch (Exception e) {
                         echo "Stage 1 failed: ${e.message}"
                     }
