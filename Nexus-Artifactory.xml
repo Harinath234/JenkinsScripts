@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+	
+    stages {
+	
+        stage('clone git code') {
+            steps {
+                echo 'This stage clones sc from git repo'
+				git branch: 'main', url: 'https://github.com/Harinath234/mindcircuit16d.git'
+            }
+			}
+			
+        stage('build artifact') {
+            steps {
+                echo 'This stage build artifact using maven'
+				sh 'mvn clean install'
+            }
+			}
+		stage('uploading artifact to nexus') {
+            steps {
+                echo 'This stage upload artifact to nexus using maven'
+				sh 'mvn clean deploy'
+            }
+			}
+			
+        stage('Deploy to tomcat') {
+            steps {
+                echo 'This stage deploys .war to tomcat webserver'
+				deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'tomcat', path: '', url: 'http://ec2-3-220-169-233.compute-1.amazonaws.com:8080/')], contextPath: 'MC-APP', war: '**/*.war'
+            }
+			
+        }
+    }
+}

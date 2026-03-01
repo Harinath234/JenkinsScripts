@@ -1,0 +1,146 @@
+In **Jenkins**, there are many **built-in environment variables** automatically available during a build. These vary slightly depending on job type (Freestyle vs Pipeline), SCM, and plugins, but the following are the most common and core ones.
+
+---
+
+# 🔹 1️⃣ Core Build Variables (Always Available)
+
+| Variable             | Description                                |
+| -------------------- | ------------------------------------------ |
+| `BUILD_NUMBER`       | Current build number (e.g., `15`)          |
+| `BUILD_ID`           | Same as build number (older compatibility) |
+| `BUILD_TAG`          | `jenkins-${JOB_NAME}-${BUILD_NUMBER}`      |
+| `BUILD_URL`          | Full URL to this build                     |
+| `JOB_NAME`           | Name of the job                            |
+| `JOB_BASE_NAME`      | Job name without folder path               |
+| `JOB_URL`            | URL of the job                             |
+| `BUILD_DISPLAY_NAME` | Display name of the build                  |
+| `NODE_NAME`          | Agent name running the build               |
+| `NODE_LABELS`        | Labels assigned to the agent               |
+| `EXECUTOR_NUMBER`    | Executor number on agent                   |
+| `WORKSPACE`          | Workspace directory path                   |
+| `JENKINS_URL`        | Root Jenkins URL                           |
+| `JENKINS_HOME`       | Jenkins home directory                     |
+| `CI`                 | Always set to `true`                       |
+
+---
+
+# 🔹 2️⃣ SCM (Git) Variables
+
+(Available when using Git plugin)
+
+| Variable                         | Description            |
+| -------------------------------- | ---------------------- |
+| `GIT_BRANCH`                     | Current branch         |
+| `GIT_COMMIT`                     | Commit SHA             |
+| `GIT_PREVIOUS_COMMIT`            | Previous commit SHA    |
+| `GIT_PREVIOUS_SUCCESSFUL_COMMIT` | Last successful commit |
+| `GIT_URL`                        | Git repository URL     |
+
+---
+
+# 🔹 3️⃣ Multibranch Pipeline Variables
+
+| Variable        | Description         |
+| --------------- | ------------------- |
+| `BRANCH_NAME`   | Branch being built  |
+| `CHANGE_ID`     | Pull request ID     |
+| `CHANGE_TARGET` | Target branch of PR |
+| `CHANGE_BRANCH` | Source branch of PR |
+| `CHANGE_AUTHOR` | PR author           |
+| `CHANGE_TITLE`  | PR title            |
+| `CHANGE_URL`    | PR URL              |
+
+---
+
+# 🔹 4️⃣ Pipeline-Specific Access
+
+In Pipeline, access variables like this:
+
+```groovy
+echo "${env.BUILD_NUMBER}"
+echo "${env.JOB_NAME}"
+```
+
+Inside shell step:
+
+```groovy
+sh 'echo $BUILD_NUMBER'
+```
+
+---
+
+# 🔹 5️⃣ How to See All Available Variables in Your Job
+
+Add this to your pipeline:
+
+```groovy
+sh 'printenv | sort'
+```
+
+Or in Groovy:
+
+```groovy
+env.getEnvironment().each { k, v ->
+    println "${k} = ${v}"
+}
+```
+
+---
+
+# 🔹 6️⃣ Quick Example
+
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Example') {
+            steps {
+                echo "Job: ${env.JOB_NAME}"
+                echo "Build: ${env.BUILD_NUMBER}"
+                echo "Workspace: ${env.WORKSPACE}"
+            }
+        }
+    }
+}
+```
+
+---
+
+# ✅ Important Notes
+
+* Some variables only exist in **Freestyle jobs**
+* Some exist only in **Multibranch Pipelines**
+* Some require specific plugins (Git, GitHub, etc.)
+* You can override or define your own environment variables
+
+---
+
+If you'd like, I can also provide a **categorized cheat sheet specifically for Pipeline jobs**, since behavior differs slightly from Freestyle.
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Show Built-in Env Variables') {
+            steps {
+                echo "Job Name: $JOB_NAME"          // name of the Jenkins job
+                echo "Build Number: ${env.BUILD_NUMBER}" // auto-incremented build number
+                echo "Workspace: ${env.WORKSPACE}"       // directory where code is checked out
+                echo "Build ID: ${env.BUILD_ID}"         // unique ID for this build
+                echo "Node Name: ${env.NODE_NAME}"       // Jenkins agent name
+                echo "Executor Number: ${env.EXECUTOR_NUMBER}" // executor slot running this job
+         //       echo "Git Branch: ${env.GIT_BRANCH}"     // available if job is connected to Git
+            }
+        }
+
+        stage('Run Script with Env Vars') {
+            steps {
+                sh '''
+                    echo "We are running job: $JOB_NAME"
+                    echo "This is build number: $BUILD_NUMBER"
+                    echo "Workspace is: $WORKSPACE"
+                '''
+            }
+        }
+    }
+}
