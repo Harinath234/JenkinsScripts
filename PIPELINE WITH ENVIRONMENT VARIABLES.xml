@@ -1,4 +1,4 @@
-1. PIPELINE WITH ENVIRONEMNT VARIABLES(Built-in variables & Custom environment variables)
+1. PIPELINE WITH ENVIRONMENT VARIABLES(Built-in variables & Custom environment variables)
 
 pipeline {
     agent any
