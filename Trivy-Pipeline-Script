@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+    
+	tools {
+	maven 'Maven_3.9.11'
+	}
+
+     stage('CLONE SCM') {
+            steps {
+              echo 'This stage clones SC from GIT repo'	
+              git branch: 'main', url: 'https://github.com/Harinath234/mindcircuit16d.git'  
+            }
+        }
+
+   stage('SONARQUBE ANALYSIS ') {
+            steps {
+                echo " SONARQUBE ANALYSIS"
+				sh ''' mvn sonar:sonar \\
+                      -Dsonar.host.url=http://3.80.128.201:9000/ \\
+                      -Dsonar.login=squ_464b30c7f49ad6b99a5d0cd66bb6b88ccc5a7df3'''
+				
+            }
+        }
+
+        stage('Build Artifact') {
+            steps {
+                echo 'This stage builds the code using maven'
+				sh 'mvn clean install'			
+				
+            }
+        }
+		           
+       stage('DOCKER IMAGE BUILD') {
+            steps {
+                   echo 'This stage builds the Image'
+                    sh 'docker build -t harinath93811/dockerized-app:v1 -f Dockerfile .'
+
+            }
+        }
+		
+         stage('image scan using trivy') {
+            steps {
+               echo 'This stage scans the Image'
+               sh "trivy image --format json --output results.json harinath93811/dockerized-app:v1"
+                                     
+            }
+        }
+		
+        stage('docker image push') {
+            steps {
+             script{
+               withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
+                 sh 'docker login -u harinath93811 -p ${dockerhub}'
+             }
+                    sh 'docker push harinath93811/dockerized-app:v1'
+                }
+        
+            }
+        }
+
+        }
+		
+		}
